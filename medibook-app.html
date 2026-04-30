@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediBook – Online Medical Checkup Booking</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --bg: #f0f9ff;
+      --white: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --danger: #ef4444;
+      --shadow: 0 4px 24px rgba(14,165,233,0.10);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px; position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+    .logo span { color: var(--secondary); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.97rem; transition: color 0.2s; cursor: pointer; }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+    .nav-btns { display: flex; gap: 10px; align-items: center; }
+    .btn { padding: 9px 22px; border-radius: 10px; border: none; cursor: pointer; font-size: 0.93rem; font-weight: 600; transition: all 0.2s; font-family: inherit; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: #fff; }
+    .btn-secondary:hover { background: #059669; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+
+    /* PAGES */
+    .page { display: none; padding: 40px; max-width: 1200px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+      border-radius: var(--radius); padding: 60px 50px; color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 40px; gap: 30px;
+    }
+    .hero-text h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+    .hero-text p { font-size: 1.1rem; opacity: 0.93; margin-bottom: 28px; max-width: 500px; }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .hero-img { font-size: 7rem; }
+    .search-bar {
+      background: #fff; border-radius: 14px; padding: 8px 8px 8px 20px;
+      display: flex; gap: 10px; align-items: center; max-width: 680px;
+      box-shadow: var(--shadow); margin-bottom: 40px;
+    }
+    .search-bar input { flex: 1; border: none; outline: none; font-size: 1rem; color: var(--text); background: transparent; font-family: inherit; }
+    .search-bar select { border: none; background: transparent; color: var(--muted); outline: none; font-family: inherit; }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 24px; text-align: center; box-shadow: var(--shadow); }
+    .stat-card .num { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-card .label { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+    /* SECTION TITLE */
+    .section-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .section-sub { color: var(--muted); margin-bottom: 28px; font-size: 0.97rem; }
+
+    /* SPECIALTIES */
+    .specialty-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 40px; }
+    .specialty-card {
+      background: var(--white); border-radius: var(--radius); padding: 22px 10px;
+      text-align: center; box-shadow: var(--shadow); cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .specialty-card:hover, .specialty-card.selected { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(14,165,233,0.18); border: 2px solid var(--primary); }
+    .specialty-card .icon { font-size: 2.2rem; margin-bottom: 8px; }
+    .specialty-card .name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+
+    /* DOCTORS */
+    .doctor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+    .doctor-card { background: var(--white); border-radius: var(--radius); padding: 28px 22px; box-shadow: var(--shadow); transition: transform 0.2s; }
+    .doctor-card:hover { transform: translateY(-4px); }
+    .doctor-avatar { font-size: 3.2rem; margin-bottom: 10px; }
+    .doctor-name { font-size: 1.1rem; font-weight: 700; }
+    .doctor-spec { color: var(--primary); font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
+    .doctor-info { font-size: 0.85rem; color: var(--muted); margin-bottom: 14px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; margin-right: 5px; margin-bottom: 5px; }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-orange { background: #fef3c7; color: #92400e; }
+    .stars { color: var(--accent); font-size: 0.9rem; margin-bottom: 4px; }
+
+    /* PACKAGES */
+    .package-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+    .package-card { background: var(--white); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); border-top: 4px solid var(--primary); transition: transform 0.2s; }
+    .package-card.popular { border-top-color: var(--secondary); }
+    .package-card.premium { border-top-color: var(--accent); }
+    .package-card:hover { transform: translateY(-4px); }
+    .pkg-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+    .pkg-price { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .pkg-price.popular { color: var(--secondary); }
+    .pkg-price.premium { color: var(--accent); }
+    .pkg-tag { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; }
+    .pkg-features { list-style: none; margin-bottom: 20px; }
+    .pkg-features li { padding: 5px 0; font-size: 0.9rem; color: var(--muted); }
+    .pkg-features li::before { content: "✅ "; }
+
+    /* BOOKING FORM */
+    .booking-card { background: var(--white); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); max-width: 740px; margin: 0 auto; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    input, select, textarea {
+      padding: 11px 14px; border: 2px solid var(--border); border-radius: 10px;
+      font-size: 0.95rem; color: var(--text); outline: none; transition: border 0.2s;
+      background: #f8fafc; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* STEPS */
+    .steps { display: flex; gap: 0; margin-bottom: 32px; }
+    .step { flex: 1; text-align: center; padding: 14px 8px; background: var(--border); font-size: 0.85rem; font-weight: 600; color: var(--muted); position: relative; }
+    .step.active { background: var(--primary); color: #fff; }
+    .step.done { background: var(--secondary); color: #fff; }
+    .step:first-child { border-radius: 10px 0 0 10px; }
+    .step:last-child { border-radius: 0 10px 10px 0; }
+
+    /* DASHBOARD */
+    .dashboard-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+    .dash-sidebar { background: var(--white); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); text-align: center; }
+    .dash-avatar { font-size: 4rem; margin-bottom: 10px; }
+    .dash-name { font-size: 1.2rem; font-weight: 700; }
+    .dash-email { font-size: 0.88rem; color: var(--muted); margin-bottom: 20px; }
+    .dash-menu { list-style: none; text-align: left; }
+    .dash-menu li { padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 0.93rem; font-weight: 500; color: var(--muted); margin-bottom: 4px; transition: all 0.2s; }
+    .dash-menu li:hover, .dash-menu li.active { background: #e0f2fe; color: var(--primary); }
+    .dash-content { display: flex; flex-direction: column; gap: 20px; }
+    .dash-card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+    .appt-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .appt-item:last-child { border-bottom: none; }
+    .appt-icon { font-size: 2rem; }
+    .appt-info { flex: 1; }
+    .appt-info .name { font-weight: 700; font-size: 0.97rem; }
+    .appt-info .time { font-size: 0.83rem; color: var(--muted); margin-top: 2px; }
+    .status { padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-completed { background: #dbeafe; color: #1e40af; }
+
+    /* AI ASSISTANT */
+    .ai-bubble {
+      position: fixed; bottom: 28px; right: 28px; z-index: 500;
+    }
+    .ai-toggle {
+      width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #10b981);
+      border: none; cursor: pointer; font-size: 1.7rem; box-shadow: 0 8px 28px rgba(14,165,233,0.45);
+      display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
+    }
+    .ai-toggle:hover { transform: scale(1.08); }
+    .ai-panel {
+      position: absolute; bottom: 76px; right: 0;
+      width: 370px; background: #fff; border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      display: none; flex-direction: column; overflow: hidden;
+      animation: slideUp 0.25s ease;
+    }
+    .ai-panel.open { display: flex; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .ai-header {
+      background: linear-gradient(135deg, #0ea5e9, #10b981);
+      color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    }
+    .ai-header-info { flex: 1; }
+    .ai-header-info strong { font-size: 1rem; font-weight: 700; }
+    .ai-header-info small { opacity: 0.85; font-size: 0.8rem; }
+    .ai-messages { flex: 1; padding: 16px; overflow-y: auto; max-height: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .ai-msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 0.88rem; line-height: 1.5; }
+    .ai-msg.bot { background: #f0f9ff; color: var(--text); border-bottom-left-radius: 4px; align-self: flex-start; }
+    .ai-msg.user { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+    .ai-msg.typing { background: #f0f9ff; color: var(--muted); font-style: italic; }
+    .ai-input-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .ai-input-row input { flex: 1; border: 2px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 0.88rem; font-family: inherit; outline: none; }
+    .ai-input-row input:focus { border-color: var(--primary); }
+    .ai-input-row button { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 1rem; }
+    .ai-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+    .ai-quick button { background: #f0f9ff; border: 1.5px solid #bae6fd; color: var(--primary); border-radius: 20px; padding: 5px 12px; font-size: 0.78rem; cursor: pointer; font-family: inherit; font-weight: 600; }
+    .ai-quick button:hover { background: var(--primary); color: #fff; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: var(--radius); padding: 36px; max-width: 460px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: popIn 0.25s ease; }
+    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal h2 { font-size: 1.4rem; margin-bottom: 8px; }
+    .modal p { color: var(--muted); font-size: 0.93rem; margin-bottom: 20px; }
+    .close-modal { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); }
+
+    /* FILTERS */
+    .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+    .filter-bar select, .filter-bar input { padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-family: inherit; background: #fff; outline: none; }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--primary); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); z-index: 9999; background: var(--secondary); color: #fff; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 20px rgba(16,185,129,0.3); opacity: 0; transition: all 0.3s; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { background: var(--danger); }
+
+    /* NOTIFICATIONS */
+    .notif-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; display: inline-block; margin-left: 4px; }
+    .notif-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item .notif-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+    .notif-item .notif-msg { font-size: 0.85rem; color: var(--muted); }
+    .notif-item.unread { background: #f0f9ff; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+
+    /* SLOTS */
+    .slot-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .slot-btn { padding: 8px 16px; border: 2px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: inherit; transition: all 0.15s; }
+    .slot-btn:hover, .slot-btn.selected { border-color: var(--primary); background: #e0f2fe; color: var(--primary); }
+    .slot-btn.booked { border-color: var(--border); background: #f8fafc; color: #cbd5e1; cursor: not-allowed; }
+
+    /* FOOTER */
+    footer { background: #1e293b; color: #94a3b8; padding: 40px; margin-top: 60px; font-size: 0.9rem; }
+    footer .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; text-align: left; margin-bottom: 30px; max-width: 1200px; margin: 0 auto 30px; }
+    footer h4 { color: #fff; margin-bottom: 12px; font-size: 1rem; }
+    footer ul { list-style: none; }
+    footer ul li { margin-bottom: 7px; }
+    footer ul li a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+    footer ul li a:hover { color: var(--primary); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .specialty-grid { grid-template-columns: repeat(3, 1fr); }
+      .doctor-grid, .package-grid { grid-template-columns: 1fr 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; text-align: center; }
+      .hero-img { display: none; }
+      nav { padding: 0 18px; }
+      .nav-links { display: none; }
+      .page { padding: 20px; }
+      .ai-panel { width: 330px; }
+    }
+    @media (max-width: 600px) {
+      .doctor-grid, .package-grid, .specialty-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .hero-text h1 { font-size: 1.8rem; }
+      footer .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--muted); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; background: #fef3c7; color: #92400e; margin-left: 6px; }
+    .pill.new { background: #d1fae5; color: #065f46; }
+    .info-row { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Medi<span>Book</span></div>
+  <ul class="nav-links">
+    <li><a class="active" onclick="showPage('home')">Home</a></li>
+    <li><a onclick="showPage('doctors')">Doctors</a></li>
+    <li><a onclick="showPage('packages')">Packages</a></li>
+    <li><a onclick="showPage('book')">Book Now</a></li>
+    <li><a onclick="showPage('dashboard')">Dashboard</a></li>
+  </ul>
+  <div class="nav-btns">
+    <span id="nav-user" style="display:none;font-weight:600;color:var(--primary);margin-right:8px;font-size:0.9rem;"></span>
+    <button class="btn btn-outline" id="btn-login" onclick="openModal('login')">Login</button>
+    <button class="btn btn-primary" id="btn-signup" onclick="openModal('signup')">Sign Up</button>
+    <button class="btn btn-outline" id="btn-logout" style="display:none;" onclick="logoutUser()">Logout</button>
+  </div>
+</nav>
+
+<!-- ======= HOME PAGE ======= -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Your Health,<br>Our Priority 🩺</h1>
+      <p>Book doctor appointments, health checkups, lab tests, and video consultations — all in one place.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" style="background:#fff;color:var(--primary);font-size:1rem;padding:12px 28px;" onclick="showPage('book')">📅 Book Appointment</button>
+        <button class="btn btn-outline" style="border-color:#fff;color:#fff;font-size:1rem;padding:12px 28px;" onclick="showPage('packages')">📦 View Packages</button>
+      </div>
+    </div>
+    <div class="hero-img">🏥</div>
+  </div>
+
+  <div class="search-bar">
+    <span style="font-size:1.3rem">🔍</span>
+    <input type="text" id="home-search" placeholder="Search doctors, specialties, symptoms..." oninput="filterHomeSearch()" />
+    <select id="home-city" onchange="filterHomeSearch()">
+      <option value="">All Cities</option>
+    </select>
+    <button class="btn btn-primary" onclick="filterHomeSearch()">Search</button>
+  </div>
+
+  <!-- Search Results -->
+  <div id="home-results" style="display:none;margin-bottom:32px;">
+    <div class="section-title" style="font-size:1.1rem;">Search Results</div>
+    <div class="doctor-grid" id="home-results-grid"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="num">500+</div><div class="label">Verified Doctors</div></div>
+    <div class="stat-card"><div class="num">50k+</div><div class="label">Happy Patients</div></div>
+    <div class="stat-card"><div class="num">10+</div><div class="label">Specialties</div></div>
+    <div class="stat-card"><div class="num">4.8⭐</div><div class="label">Average Rating</div></div>
+  </div>
+
+  <div class="section-title">Browse by Specialty</div>
+  <div class="section-sub">Select a specialty to view available doctors</div>
+  <div class="specialty-grid" id="specialty-grid-home"></div>
+
+  <div class="section-title">Top Doctors</div>
+  <div class="section-sub">Highly rated specialists trusted by thousands</div>
+  <div class="doctor-grid" id="top-doctors-grid"></div>
+</div>
+
+<!-- ======= DOCTORS PAGE ======= -->
+<div class="page" id="page-doctors">
+  <div class="section-title">Find a Doctor</div>
+  <div class="section-sub">Browse our network of verified specialists</div>
+  <div class="filter-bar">
+    <select id="filter-specialty" onchange="renderDoctors()">
+      <option value="">All Specialties</option>
+    </select>
+    <select id="filter-city" onchange="renderDoctors()">
+      <option value="">All Cities</option>
+    </select>
+    <select id="filter-consult" onchange="renderDoctors()">
+      <option value="">All Modes</option>
+      <option value="video">Video</option>
+      <option value="clinic">In-Clinic</option>
+      <option value="home">Home Visit</option>
+    </select>
+    <input type="text" id="filter-name" placeholder="Search by name..." oninput="renderDoctors()" style="flex:1;min-width:150px;" />
+    <select id="filter-sort" onchange="renderDoctors()">
+      <option value="rating">Sort: Top Rated</option>
+      <option value="fee_asc">Fee: Low → High</option>
+      <option value="fee_desc">Fee: High → Low</option>
+      <option value="exp">Experience</option>
+    </select>
+  </div>
+  <div class="doctor-grid" id="doctors-grid"></div>
+</div>
+
+<!-- ======= PACKAGES PAGE ======= -->
+<div class="page" id="page-packages">
+  <div class="section-title">Health Checkup Packages</div>
+  <div class="section-sub">Comprehensive packages tailored to your health goals</div>
+  <div class="package-grid" id="packages-grid"></div>
+  <div class="section-title" style="margin-top:20px;">🔬 Add-on Tests</div>
+  <div class="section-sub">Customize your package with individual tests</div>
+  <div class="doctor-grid">
+    <div class="dash-card" style="padding:20px;"><div style="font-weight:700;margin-bottom:8px;">🩸 Blood Tests</div><div style="font-size:0.87rem;color:var(--muted);">CBC, ESR, CRP, HbA1c, Iron Studies</div><div style="font-weight:700;color:var(--primary);margin-top:8px;">From ₹99</div></div>
+    <div class="dash-card" style="padding:20px;"><div style="font-weight:700;margin-bottom:8px;">🔬 Hormone Tests</div><div style="font-size:0.87rem;color:var(--muted);">Thyroid, Testosterone, Estrogen, FSH, LH</div><div style="font-weight:700;color:var(--primary);margin-top:8px;">From ₹299</div></div>
+    <div class="dash-card" style="padding:20px;"><div style="font-weight:700;margin-bottom:8px;">🫀 Cardiac Tests</div><div style="font-size:0.87rem;color:var(--muted);">ECG, Echo, Stress Test, Troponin</div><div style="font-weight:700;color:var(--primary);margin-top:8px;">From ₹499</div></div>
+  </div>
+</div>
+
+<!-- ======= BOOK PAGE ======= -->
+<div class="page" id="page-book">
+  <div class="section-title">Book an Appointment</div>
+  <div class="section-sub">Fill in your details to schedule a checkup</div>
+  <div class="steps">
+    <div class="step active" id="step1">1. Select Service</div>
+    <div class="step" id="step2">2. Doctor & Time</div>
+    <div class="step" id="step3">3. Patient Details</div>
+    <div class="step" id="step4">4. Confirm</div>
+  </div>
+  <div class="booking-card">
+    <!-- Step 1 -->
+    <div id="book-step-1">
+      <h3 style="margin-bottom:18px;font-size:1.1rem;">Select Service Type</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Service Type</label>
+          <select id="book-service">
+            <option value="consultation">General Consultation</option>
+            <option value="specialist">Specialist Consultation</option>
+            <option value="package">Health Checkup Package</option>
+            <option value="video">Video Consultation</option>
+            <option value="home">Home Visit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Select Specialty</label>
+          <select id="book-specialty" onchange="loadDoctorsForBooking()">
+            <option value="">-- Choose Specialty --</option>
+          </select>
+        </div>
+        <div class="form-group full" id="book-package-row" style="display:none;">
+          <label>Select Package</label>
+          <select id="book-package">
+            <option value="">-- Choose Package --</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:20px;" onclick="bookStep(2)">Next →</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="book-step-2" style="display:none;">
+      <h3 style="margin-bottom:18px;font-size:1.1rem;">Choose Doctor & Time</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Select Doctor</label>
+          <select id="book-doctor" onchange="loadTimeSlots()">
+            <option value="">-- Choose Doctor --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preferred Date</label>
+          <input type="date" id="book-date" onchange="loadTimeSlots()" min="" />
+        </div>
+        <div class="form-group">
+          <label>Consultation Mode</label>
+          <select id="book-mode">
+            <option value="In-Clinic">In-Clinic Visit</option>
+            <option value="Video">Video Consultation</option>
+            <option value="Home Visit">Home Visit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Available Time Slots</label>
+          <div class="slot-grid" id="slot-grid">
+            <div style="color:var(--muted);font-size:0.85rem;">Select doctor & date to see slots</div>
+          </div>
+          <input type="hidden" id="book-time" />
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button class="btn btn-outline" onclick="bookStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="bookStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="book-step-3" style="display:none;">
+      <h3 style="margin-bottom:18px;font-size:1.1rem;">Patient Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient Name *</label>
+          <input type="text" id="book-name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="book-age" placeholder="Your age" />
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="book-gender">
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="book-phone" placeholder="+91 XXXXX XXXXX" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="book-email" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <select id="book-city">
+            <option value="">-- Select City --</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Symptoms / Reason for Visit</label>
+          <textarea id="book-symptoms" placeholder="Briefly describe your symptoms or reason..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select id="book-payment">
+            <option value="UPI">UPI (GPay / PhonePe)</option>
+            <option value="Card">Credit / Debit Card</option>
+            <option value="Net Banking">Net Banking</option>
+            <option value="Pay at Clinic">Pay at Clinic</option>
+            <option value="Wallet">Wallet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Coupon Code</label>
+          <input type="text" id="book-coupon" placeholder="Enter code (optional)" />
+          <span id="coupon-msg" style="font-size:0.8rem;color:var(--secondary);display:none;"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button class="btn btn-outline" onclick="bookStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="bookStep(4)">Review Booking →</button>
+      </div>
+    </div>
+
+    <!-- Step 4 - Summary -->
+    <div id="book-step-4" style="display:none;">
+      <h3 style="margin-bottom:18px;font-size:1.1rem;">Review & Confirm</h3>
+      <div id="booking-summary" style="background:#f0f9ff;border-radius:12px;padding:20px;margin-bottom:20px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" onclick="bookStep(3)">← Back</button>
+        <button class="btn btn-secondary" style="flex:1;padding:14px;font-size:1.05rem;" onclick="confirmBooking()">✅ Confirm Appointment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= DASHBOARD PAGE ======= -->
+<div class="page" id="page-dashboard">
+  <div class="section-title">My Dashboard</div>
+  <div class="section-sub">Manage your health journey</div>
+  <div id="dashboard-login-prompt" style="display:none;text-align:center;padding:60px 20px;">
+    <div style="font-size:3rem;margin-bottom:16px;">🔐</div>
+    <h3 style="margin-bottom:8px;">Please login to view your dashboard</h3>
+    <p style="color:var(--muted);margin-bottom:20px;">Access your appointments, reports and prescriptions</p>
+    <button class="btn btn-primary" onclick="openModal('login')">Login Now</button>
+  </div>
+  <div id="dashboard-content">
+    <div class="dashboard-grid">
+      <div class="dash-sidebar">
+        <div class="dash-avatar">👤</div>
+        <div class="dash-name" id="dash-name">Rahul Sharma</div>
+        <div class="dash-email" id="dash-email">rahul@email.com</div>
+        <ul class="dash-menu">
+          <li class="active" onclick="dashSection('appointments')">📅 My Appointments</li>
+          <li onclick="dashSection('reports')">🧪 Lab Reports</li>
+          <li onclick="dashSection('prescriptions')">💊 Prescriptions</li>
+          <li onclick="dashSection('notifications')">🔔 Notifications <span class="notif-dot" id="notif-dot"></span></li>
+          <li onclick="dashSection('profile')">👤 Profile</li>
+        </ul>
+      </div>
+      <div class="dash-content">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div class="dash-card" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);" id="dash-count-total">-</div>
+            <div style="font-size:0.85rem;color:var(--muted);">Total Appointments</div>
+          </div>
+          <div class="dash-card" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--secondary);" id="dash-count-upcoming">-</div>
+            <div style="font-size:0.85rem;color:var(--muted);">Upcoming</div>
+          </div>
+          <div class="dash-card" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--accent);" id="dash-count-reports">-</div>
+            <div style="font-size:0.85rem;color:var(--muted);">Lab Reports</div>
+          </div>
+        </div>
+        <div id="dash-section-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <button class="close-modal" onclick="closeModal('login')">×</button>
+    <h2>👋 Welcome Back!</h2>
+    <p>Login to manage your appointments and health records.</p>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group"><label>Email / Phone</label><input type="text" id="login-email" placeholder="Enter email or phone" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="Enter password" /></div>
+      <div id="login-error" style="color:var(--danger);font-size:0.85rem;display:none;"></div>
+      <button class="btn btn-primary" style="padding:13px;font-size:1rem;" onclick="loginUser()">Login</button>
+      <div style="text-align:center;font-size:0.85rem;color:var(--muted);">Demo: rahul@gmail.com / Password@123</div>
+      <div style="text-align:center;font-size:0.85rem;">Don't have an account? <a href="#" style="color:var(--primary);font-weight:600;" onclick="switchModal()">Sign Up</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-overlay" id="modal-signup">
+  <div class="modal">
+    <button class="close-modal" onclick="closeModal('signup')">×</button>
+    <h2>🏥 Create Account</h2>
+    <p>Join MediBook for hassle-free health management.</p>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group"><label>Full Name *</label><input type="text" id="signup-name" placeholder="Your full name" /></div>
+      <div class="form-group"><label>Phone *</label><input type="tel" id="signup-phone" placeholder="+91 XXXXX XXXXX" /></div>
+      <div class="form-group"><label>Email *</label><input type="email" id="signup-email" placeholder="your@email.com" /></div>
+      <div class="form-group"><label>Password *</label><input type="password" id="signup-pass" placeholder="Create a password (min 6 chars)" /></div>
+      <div id="signup-error" style="color:var(--danger);font-size:0.85rem;display:none;"></div>
+      <button class="btn btn-primary" style="padding:13px;font-size:1rem;" onclick="signupUser()">Create Account</button>
+      <div style="text-align:center;font-size:0.85rem;">Already have an account? <a href="#" style="color:var(--primary);font-weight:600;" onclick="switchModal()">Login</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:4rem;margin-bottom:16px;">✅</div>
+    <h2>Appointment Confirmed!</h2>
+    <p>Your appointment has been successfully booked. A confirmation would be sent to you.</p>
+    <div id="confirm-details" style="background:#f0fdf4;border-radius:12px;padding:16px;margin-bottom:20px;text-align:left;"></div>
+    <button class="btn btn-primary" style="width:100%;padding:13px;" onclick="closeModal('confirm');showPage('dashboard')">Go to Dashboard</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- AI ASSISTANT -->
+<div class="ai-bubble">
+  <div class="ai-panel" id="ai-panel">
+    <div class="ai-header">
+      <span style="font-size:1.6rem;">🤖</span>
+      <div class="ai-header-info">
+        <strong>MediBook AI Assistant</strong><br>
+        <small>Powered by Claude · Ask anything about health & booking</small>
+      </div>
+      <button onclick="toggleAI()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;">×</button>
+    </div>
+    <div class="ai-messages" id="ai-messages">
+      <div class="ai-msg bot">👋 Hello! I'm your MediBook AI assistant. I can help you find the right doctor, understand symptoms, explain health packages, or assist with your booking. How can I help?</div>
+    </div>
+    <div class="ai-quick">
+      <button onclick="aiQuick('Find me a cardiologist in Indore')">❤️ Cardiologist</button>
+      <button onclick="aiQuick('What is included in the Full Body Checkup?')">📦 Packages</button>
+      <button onclick="aiQuick('My head hurts, which doctor should I see?')">🧠 Symptoms</button>
+      <button onclick="aiQuick('How do I book a video consultation?')">🎥 Video Call</button>
+    </div>
+    <div class="ai-input-row">
+      <input type="text" id="ai-input" placeholder="Ask about doctors, symptoms, booking..." onkeydown="if(event.key==='Enter')sendAI()" />
+      <button onclick="sendAI()">➤</button>
+    </div>
+  </div>
+  <button class="ai-toggle" onclick="toggleAI()" title="AI Health Assistant">🤖</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4>🏥 MediBook</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Our Team</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#">Book Appointment</a></li>
+        <li><a href="#">Video Consultation</a></li>
+        <li><a href="#">Lab Tests</a></li>
+        <li><a href="#">Home Visit</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Refund Policy</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">📞 1800-MED-BOOK</a></li>
+        <li><a href="#">✉️ support@medibook.in</a></li>
+        <li><a href="#">📍 Indore, MP, India</a></li>
+        <li><a href="#">🕐 24/7 Support</a></li>
+      </ul>
+    </div>
+  </div>
+  <div style="border-top:1px solid #334155;padding-top:20px;margin-top:20px;text-align:center;">
+    © 2025 MediBook. All rights reserved. | Made with ❤️ for better healthcare.
+  </div>
+</footer>
+
+<script>
+// ============================================================
+//  DATABASE (from medibook.sql — embedded as JS objects)
+// ============================================================
+const DB = {
+  cities: [
+    {id:1,name:'Indore',state:'Madhya Pradesh'},
+    {id:2,name:'Mumbai',state:'Maharashtra'},
+    {id:3,name:'Delhi',state:'Delhi'},
+    {id:4,name:'Bangalore',state:'Karnataka'},
+    {id:5,name:'Pune',state:'Maharashtra'},
+    {id:6,name:'Hyderabad',state:'Telangana'}
+  ],
+  specialties: [
+    {id:1,name:'General Physician',icon:'🩺',description:'Primary healthcare for common illnesses'},
+    {id:2,name:'Cardiology',icon:'❤️',description:'Heart and cardiovascular system'},
+    {id:3,name:'Neurology',icon:'🧠',description:'Brain and nervous system disorders'},
+    {id:4,name:'Pediatrics',icon:'👶',description:'Medical care for infants and children'},
+    {id:5,name:'Orthopedics',icon:'🦴',description:'Bones, joints and musculoskeletal system'},
+    {id:6,name:'Dermatology',icon:'💊',description:'Skin, hair and nail conditions'},
+    {id:7,name:'Ophthalmology',icon:'👁️',description:'Eye care and vision'},
+    {id:8,name:'Dentistry',icon:'🦷',description:'Oral health and dental care'},
+    {id:9,name:'Physiotherapy',icon:'🏃',description:'Physical rehabilitation and movement'},
+    {id:10,name:'Radiology',icon:'🔬',description:'Medical imaging and diagnosis'}
+  ],
+  doctors: [
+    {id:1,full_name:'Dr. Priya Sharma',email:'dr.priya@medibook.in',specialty_id:2,qualification:'MBBS, MD (Cardiology), AIIMS Delhi',experience_years:15,hospital_name:'City Heart Hospital',city_id:1,bio:'Specialist in cardiac care with 15 years of clinical experience.',consultation_fee:800,avg_rating:4.9,total_reviews:142,is_available_video:true,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👩‍⚕️'},
+    {id:2,full_name:'Dr. Arjun Mehta',email:'dr.arjun@medibook.in',specialty_id:3,qualification:'MBBS, DM (Neurology), KEM Mumbai',experience_years:12,hospital_name:'Bombay Neuro Center',city_id:2,bio:'Expert neurologist managing stroke and epilepsy cases.',consultation_fee:1000,avg_rating:4.8,total_reviews:98,is_available_video:false,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👨‍⚕️'},
+    {id:3,full_name:'Dr. Neha Gupta',email:'dr.neha@medibook.in',specialty_id:4,qualification:'MBBS, MD (Pediatrics), MGM Indore',experience_years:10,hospital_name:'Rainbow Kids Clinic',city_id:1,bio:'Caring pediatrician dedicated to child health and wellness.',consultation_fee:600,avg_rating:4.7,total_reviews:76,is_available_video:true,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👩‍⚕️'},
+    {id:4,full_name:'Dr. Rahul Verma',email:'dr.rahul@medibook.in',specialty_id:5,qualification:'MBBS, MS (Ortho), Fortis Delhi',experience_years:18,hospital_name:'Fortis Bone & Joint',city_id:3,bio:'Senior orthopedic surgeon specializing in joint replacements.',consultation_fee:1200,avg_rating:5.0,total_reviews:210,is_available_video:false,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👨‍⚕️'},
+    {id:5,full_name:'Dr. Kavita Patel',email:'dr.kavita@medibook.in',specialty_id:6,qualification:'MBBS, MD (Derm), Bombay Hospital',experience_years:8,hospital_name:'Skin & Glow Clinic',city_id:2,bio:'Dermatologist with expertise in acne, pigmentation and hair loss.',consultation_fee:700,avg_rating:4.6,total_reviews:55,is_available_video:true,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👩‍⚕️'},
+    {id:6,full_name:'Dr. Sunil Joshi',email:'dr.sunil@medibook.in',specialty_id:1,qualification:'MBBS, MD (General), City Hospital',experience_years:20,hospital_name:'City Medical Center',city_id:1,bio:'Trusted general physician available 7 days for all age groups.',consultation_fee:400,avg_rating:4.9,total_reviews:320,is_available_video:true,is_available_clinic:true,is_available_home:false,is_verified:true,is_active:true,avatar:'👨‍⚕️'}
+  ],
+  doctor_schedules: [
+    {doctor_id:1,day_of_week:'Monday',start_time:'09:00',end_time:'17:00',slot_duration_mins:30},
+    {doctor_id:1,day_of_week:'Wednesday',start_time:'09:00',end_time:'17:00',slot_duration_mins:30},
+    {doctor_id:1,day_of_week:'Friday',start_time:'09:00',end_time:'13:00',slot_duration_mins:30},
+    {doctor_id:2,day_of_week:'Tuesday',start_time:'11:00',end_time:'19:00',slot_duration_mins:30},
+    {doctor_id:2,day_of_week:'Thursday',start_time:'11:00',end_time:'19:00',slot_duration_mins:30},
+    {doctor_id:2,day_of_week:'Saturday',start_time:'10:00',end_time:'14:00',slot_duration_mins:30},
+    {doctor_id:3,day_of_week:'Monday',start_time:'10:00',end_time:'16:00',slot_duration_mins:30},
+    {doctor_id:3,day_of_week:'Tuesday',start_time:'10:00',end_time:'16:00',slot_duration_mins:30},
+    {doctor_id:3,day_of_week:'Thursday',start_time:'10:00',end_time:'16:00',slot_duration_mins:30},
+    {doctor_id:4,day_of_week:'Monday',start_time:'08:00',end_time:'14:00',slot_duration_mins:45},
+    {doctor_id:4,day_of_week:'Wednesday',start_time:'08:00',end_time:'14:00',slot_duration_mins:45},
+    {doctor_id:4,day_of_week:'Saturday',start_time:'08:00',end_time:'12:00',slot_duration_mins:45},
+    {doctor_id:5,day_of_week:'Wednesday',start_time:'13:00',end_time:'20:00',slot_duration_mins:30},
+    {doctor_id:5,day_of_week:'Friday',start_time:'13:00',end_time:'20:00',slot_duration_mins:30},
+    {doctor_id:5,day_of_week:'Sunday',start_time:'10:00',end_time:'14:00',slot_duration_mins:30},
+    {doctor_id:6,day_of_week:'Monday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Tuesday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Wednesday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Thursday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Friday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Saturday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20},
+    {doctor_id:6,day_of_week:'Sunday',start_time:'08:00',end_time:'20:00',slot_duration_mins:20}
+  ],
+  health_packages: [
+    {id:1,name:'Basic Wellness',description:'Ideal for regular health monitoring.',price:499,original_price:799,tag:null,includes_tests:'CBC,Blood Sugar (Fasting),Urine Routine,Blood Pressure Check,BMI Assessment',includes_consultation:true},
+    {id:2,name:'Full Body Checkup',description:'Most chosen package. Comprehensive tests covering major organs.',price:1299,original_price:1999,tag:'Popular',includes_tests:'CBC,Blood Sugar,Urine Routine,Lipid Profile,Liver Function Test,Kidney Function Test,Thyroid (T3 T4 TSH),ECG,Chest X-Ray',includes_consultation:true},
+    {id:3,name:'Premium Executive',description:'Complete health assessment with priority consultation.',price:2999,original_price:4499,tag:'Premium',includes_tests:'All Full Body Tests,Vitamin D,Vitamin B12,Cancer Markers,Bone Density Scan,Eye Check,Dental Check,Stress Test,Nutritionist Consultation',includes_consultation:true}
+  ],
+  appointments: [
+    {id:1,booking_ref:'MB2024-0001',user_id:1,doctor_id:1,package_id:null,appointment_date:'2025-05-01',appointment_time:'10:00',consultation_type:'Video',status:'Confirmed',symptoms:'Chest pain and breathlessness',consultation_fee:800},
+    {id:2,booking_ref:'MB2024-0002',user_id:1,doctor_id:null,package_id:2,appointment_date:'2025-05-05',appointment_time:'08:30',consultation_type:'In-Clinic',status:'Pending',symptoms:'Annual full body checkup',consultation_fee:1299},
+    {id:3,booking_ref:'MB2024-0003',user_id:1,doctor_id:6,package_id:null,appointment_date:'2025-04-10',appointment_time:'11:00',consultation_type:'In-Clinic',status:'Completed',symptoms:'Fever and cold for 3 days',consultation_fee:400},
+    {id:4,booking_ref:'MB2024-0004',user_id:1,doctor_id:3,package_id:null,appointment_date:'2025-03-22',appointment_time:'15:00',consultation_type:'Video',status:'Cancelled',symptoms:'Child vaccination follow-up',consultation_fee:600},
+    {id:5,booking_ref:'MB2024-0005',user_id:2,doctor_id:4,package_id:null,appointment_date:'2025-04-28',appointment_time:'09:00',consultation_type:'In-Clinic',status:'Completed',symptoms:'Knee pain after running',consultation_fee:1200},
+    {id:6,booking_ref:'MB2024-0006',user_id:3,doctor_id:5,package_id:null,appointment_date:'2025-05-03',appointment_time:'14:00',consultation_type:'Video',status:'Confirmed',symptoms:'Acne and dark spots on face',consultation_fee:700},
+    {id:7,booking_ref:'MB2024-0007',user_id:4,doctor_id:2,package_id:null,appointment_date:'2025-05-07',appointment_time:'11:00',consultation_type:'In-Clinic',status:'Pending',symptoms:'Recurring headaches',consultation_fee:1000},
+    {id:8,booking_ref:'MB2024-0008',user_id:5,doctor_id:1,package_id:null,appointment_date:'2025-04-15',appointment_time:'09:30',consultation_type:'Video',status:'Completed',symptoms:'Post-surgery cardiac checkup',consultation_fee:800}
+  ],
+  users: [
+    {id:1,full_name:'Rahul Sharma',email:'rahul@gmail.com',phone:'9876543210',password:'Password@123',gender:'Male',date_of_birth:'1995-06-15',blood_group:'B+',address:'12 MG Road',city_id:1,is_verified:true},
+    {id:2,full_name:'Priya Verma',email:'priya@gmail.com',phone:'9876543211',password:'Password@123',gender:'Female',date_of_birth:'1990-03-22',blood_group:'O+',address:'45 Andheri West',city_id:2,is_verified:true},
+    {id:3,full_name:'Amit Patel',email:'amit@gmail.com',phone:'9876543212',password:'Password@123',gender:'Male',date_of_birth:'1988-11-10',blood_group:'A+',address:'78 Connaught Place',city_id:3,is_verified:true},
+    {id:4,full_name:'Sneha Joshi',email:'sneha@gmail.com',phone:'9876543213',password:'Password@123',gender:'Female',date_of_birth:'2000-07-05',blood_group:'AB+',address:'23 Koregaon Park',city_id:5,is_verified:false},
+    {id:5,full_name:'Vikram Singh',email:'vikram@gmail.com',phone:'9876543214',password:'Password@123',gender:'Male',date_of_birth:'1975-12-30',blood_group:'O-',address:'56 Banjara Hills',city_id:6,is_verified:true}
+  ],
+  lab_reports: [
+    {id:1,user_id:1,appointment_id:3,report_name:'Complete Blood Count (CBC)',report_date:'2025-04-10',uploaded_by:'Lab'},
+    {id:2,user_id:1,appointment_id:3,report_name:'Lipid Profile',report_date:'2025-04-10',uploaded_by:'Lab'},
+    {id:3,user_id:1,appointment_id:8,report_name:'ECG Report',report_date:'2025-04-15',uploaded_by:'Doctor'},
+    {id:4,user_id:2,appointment_id:5,report_name:'X-Ray Right Knee',report_date:'2025-04-28',uploaded_by:'Lab'},
+    {id:5,user_id:5,appointment_id:8,report_name:'Echocardiography Report',report_date:'2025-04-15',uploaded_by:'Doctor'}
+  ],
+  prescriptions: [
+    {id:1,appointment_id:3,doctor_id:6,user_id:1,medicines:[{name:'Paracetamol 500mg',dosage:'1 tablet',duration:'3 days'},{name:'Cetirizine 10mg',dosage:'1 tablet at night',duration:'5 days'}],instructions:'Rest well, drink plenty of fluids. Avoid cold drinks.',follow_up_date:'2025-04-20'},
+    {id:2,appointment_id:5,doctor_id:4,user_id:2,medicines:[{name:'Diclofenac 50mg',dosage:'1 tablet after meals',duration:'7 days'},{name:'Calcium + D3',dosage:'1 tablet daily',duration:'30 days'}],instructions:'Avoid running. Do light stretching. Apply ice pack if needed.',follow_up_date:'2025-05-28'}
+  ],
+  notifications: [
+    {id:1,user_id:1,title:'Appointment Confirmed ✅',message:'Your appointment with Dr. Priya Sharma on May 1 at 10:00 AM is confirmed.',type:'Appointment',is_read:false},
+    {id:2,user_id:1,title:'Reminder 🔔',message:'You have an appointment tomorrow at 10:00 AM. Please be ready 5 minutes early.',type:'Reminder',is_read:false},
+    {id:3,user_id:1,title:'Lab Report Ready 🧪',message:'Your CBC report from April 10 is now available in Health Records.',type:'Report',is_read:true}
+  ],
+  coupons: [
+    {id:1,code:'FIRST50',discount_type:'Flat',discount_value:50,min_order_amount:0,valid_until:'2025-12-31',is_active:true},
+    {id:2,code:'HEALTH20',discount_type:'Percent',discount_value:20,min_order_amount:500,valid_until:'2025-06-30',is_active:true},
+    {id:3,code:'WELCOME100',discount_type:'Flat',discount_value:100,min_order_amount:999,valid_until:'2025-12-31',is_active:true},
+    {id:4,code:'SUMMER15',discount_type:'Percent',discount_value:15,min_order_amount:1000,valid_until:'2025-07-31',is_active:true}
+  ]
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentUser = null;
+let bookingData = {};
+let selectedSlot = null;
+let nextAppointmentId = DB.appointments.length + 1;
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  populateFilters();
+  renderSpecialties();
+  renderTopDoctors();
+  renderDoctors();
+  renderPackages();
+  setMinDate();
+});
+
+function setMinDate() {
+  const d = new Date();
+  const s = d.toISOString().split('T')[0];
+  const el = document.getElementById('book-date');
+  if(el) el.min = s;
+}
+
+function populateFilters() {
+  // Cities dropdown
+  DB.cities.forEach(c => {
+    ['home-city','filter-city','book-city'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+        const opt = document.createElement('option');
+        opt.value = c.id; opt.textContent = c.name;
+        el.appendChild(opt);
+      }
+    });
+  });
+  // Specialties
+  DB.specialties.forEach(s => {
+    ['filter-specialty','book-specialty'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.name;
+        el.appendChild(opt);
+      }
+    });
+  });
+  // Packages
+  const pkgEl = document.getElementById('book-package');
+  DB.health_packages.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id; opt.textContent = `${p.name} — ₹${p.price}`;
+    pkgEl.appendChild(opt);
+  });
+
+  document.getElementById('book-service').addEventListener('change', function() {
+    const pkgRow = document.getElementById('book-package-row');
+    pkgRow.style.display = this.value === 'package' ? 'flex' : 'none';
+  });
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'book') {
+    if (currentUser) {
+      document.getElementById('book-name').value = currentUser.full_name;
+      document.getElementById('book-email').value = currentUser.email;
+      document.getElementById('book-phone').value = currentUser.phone;
+    }
+  }
+}
+
+// ============================================================
+//  SPECIALTIES
+// ============================================================
+function renderSpecialties() {
+  const grid = document.getElementById('specialty-grid-home');
+  grid.innerHTML = DB.specialties.slice(0, 10).map(s => `
+    <div class="specialty-card" onclick="filterBySpecialty(${s.id})">
+      <div class="icon">${s.icon}</div>
+      <div class="name">${s.name}</div>
+    </div>
+  `).join('');
+}
+
+function filterBySpecialty(id) {
+  showPage('doctors');
+  document.getElementById('filter-specialty').value = id;
+  renderDoctors();
+}
+
+// ============================================================
+//  DOCTORS
+// ============================================================
+function getDoctorSpecialty(doc) {
+  return DB.specialties.find(s => s.id === doc.specialty_id) || {};
+}
+function getDoctorCity(doc) {
+  return DB.cities.find(c => c.id === doc.city_id) || {};
+}
+function renderStars(rating) {
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.5;
+  return '★'.repeat(full) + (half ? '☆' : '') + ` (${rating})`;
+}
+function doctorCardHTML(doc, compact=false) {
+  const spec = getDoctorSpecialty(doc);
+  const city = getDoctorCity(doc);
+  const modes = [];
+  if(doc.is_available_video) modes.push('<span class="badge badge-blue">📹 Video</span>');
+  if(doc.is_available_clinic) modes.push('<span class="badge badge-green">🏥 Clinic</span>');
+  if(doc.is_available_home) modes.push('<span class="badge badge-orange">🏠 Home</span>');
+  return `
+    <div class="doctor-card">
+      <div class="doctor-avatar">${doc.avatar}</div>
+      <div class="doctor-name">${doc.full_name}</div>
+      <div class="doctor-spec">${spec.icon||''} ${spec.name||''}</div>
+      <div class="stars">${renderStars(doc.avg_rating)} (${doc.total_reviews} reviews)</div>
+      <div class="doctor-info">
+        ${doc.experience_years} yrs exp · ${doc.hospital_name} · ${city.name||''}<br>
+        <strong>₹${doc.consultation_fee}</strong> per consultation
+      </div>
+      ${modes.join('')}
+      <br><br>
+      <button class="btn btn-primary" style="width:100%" onclick="bookDoctor(${doc.id})">📅 Book Now</button>
+    </div>
+  `;
+}
+
+function renderTopDoctors() {
+  const sorted = [...DB.doctors].sort((a,b) => b.avg_rating - a.avg_rating).slice(0,3);
+  document.getElementById('top-doctors-grid').innerHTML = sorted.map(d => doctorCardHTML(d)).join('');
+}
+
+function renderDoctors() {
+  const specId = parseInt(document.getElementById('filter-specialty').value) || 0;
+  const cityId = parseInt(document.getElementById('filter-city').value) || 0;
+  const consult = document.getElementById('filter-consult').value;
+  const name = document.getElementById('filter-name').value.toLowerCase();
+  const sort = document.getElementById('filter-sort').value;
+
+  let docs = DB.doctors.filter(d => {
+    if(!d.is_active) return false;
+    if(specId && d.specialty_id !== specId) return false;
+    if(cityId && d.city_id !== cityId) return false;
+    if(name && !d.full_name.toLowerCase().includes(name)) return false;
+    if(consult === 'video' && !d.is_available_video) return false;
+    if(consult === 'clinic' && !d.is_available_clinic) return false;
+    if(consult === 'home' && !d.is_available_home) return false;
+    return true;
+  });
+
+  if(sort === 'rating') docs.sort((a,b) => b.avg_rating - a.avg_rating);
+  else if(sort === 'fee_asc') docs.sort((a,b) => a.consultation_fee - b.consultation_fee);
+  else if(sort === 'fee_desc') docs.sort((a,b) => b.consultation_fee - a.consultation_fee);
+  else if(sort === 'exp') docs.sort((a,b) => b.experience_years - a.experience_years);
+
+  const grid = document.getElementById('doctors-grid');
+  if(!docs.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><p>No doctors found. Try adjusting filters.</p></div>`;
+  } else {
+    grid.innerHTML = docs.map(d => doctorCardHTML(d)).join('');
+  }
+}
+
+function filterHomeSearch() {
+  const q = document.getElementById('home-search').value.toLowerCase();
+  const cityId = parseInt(document.getElementById('home-city').value) || 0;
+  const grid = document.getElementById('home-results-grid');
+  const resultsDiv = document.getElementById('home-results');
+  if(!q && !cityId) { resultsDiv.style.display = 'none'; return; }
+  let docs = DB.doctors.filter(d => {
+    const spec = getDoctorSpecialty(d);
+    const matches = !q || d.full_name.toLowerCase().includes(q) || (spec.name||'').toLowerCase().includes(q);
+    const cityMatch = !cityId || d.city_id === cityId;
+    return matches && cityMatch && d.is_active;
+  });
+  resultsDiv.style.display = docs.length ? 'block' : 'none';
+  grid.innerHTML = docs.map(d => doctorCardHTML(d)).join('') || `<p style="color:var(--muted)">No results found.</p>`;
+}
+
+// ============================================================
+//  PACKAGES
+// ============================================================
+function renderPackages() {
+  const pkgs = DB.health_packages;
+  const classes = ['', 'popular', 'premium'];
+  const btnClasses = ['btn-primary', 'btn-secondary', 'btn-accent'];
+  const priceClasses = ['', 'popular', 'premium'];
+  const icons = ['🌿', '⭐', '👑'];
+
+  document.getElementById('packages-grid').innerHTML = pkgs.map((p, i) => `
+    <div class="package-card ${classes[i]}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div class="pkg-title">${icons[i]} ${p.name}</div>
+        ${p.tag ? `<span class="badge ${i===1?'badge-green':'badge-orange'}">${p.tag}</span>` : ''}
+      </div>
+      <div class="pkg-price ${priceClasses[i]}">₹${p.price.toLocaleString()}</div>
+      <div class="pkg-tag"><s style="color:#ccc">₹${p.original_price.toLocaleString()}</s> · Save ₹${(p.original_price - p.price).toLocaleString()}</div>
+      <ul class="pkg-features">
+        ${p.includes_tests.split(',').map(t => `<li>${t.trim()}</li>`).join('')}
+        ${p.includes_consultation ? '<li>Doctor Consultation</li>' : ''}
+      </ul>
+      <button class="btn ${btnClasses[i]}" style="width:100%" onclick="bookPackage(${p.id})">Book Now</button>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+//  BOOKING FLOW
+// ============================================================
+function bookDoctor(docId) {
+  bookingData.doctor_id = docId;
+  showPage('book');
+  const doc = DB.doctors.find(d => d.id === docId);
+  if(doc) {
+    document.getElementById('book-specialty').value = doc.specialty_id;
+    loadDoctorsForBooking();
+    setTimeout(() => { document.getElementById('book-doctor').value = docId; }, 50);
+  }
+  bookStep(2);
+}
+
+function bookPackage(pkgId) {
+  bookingData.package_id = pkgId;
+  showPage('book');
+  document.getElementById('book-service').value = 'package';
+  document.getElementById('book-package-row').style.display = 'flex';
+  document.getElementById('book-package').value = pkgId;
+  bookStep(2);
+}
+
+function bookStep(step) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('book-step-' + i).style.display = i === step ? 'block' : 'none';
+    const el = document.getElementById('step' + i);
+    el.className = 'step' + (i < step ? ' done' : i === step ? ' active' : '');
+  });
+  if(step === 4) buildBookingSummary();
+}
+
+function loadDoctorsForBooking() {
+  const specId = parseInt(document.getElementById('book-specialty').value) || 0;
+  const docSelect = document.getElementById('book-doctor');
+  docSelect.innerHTML = '<option value="">-- Choose Doctor --</option>';
+  const docs = DB.doctors.filter(d => d.is_active && (!specId || d.specialty_id === specId));
+  docs.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = `${d.full_name} — ₹${d.consultation_fee}`;
+    if(d.id === bookingData.doctor_id) opt.selected = true;
+    docSelect.appendChild(opt);
+  });
+  document.getElementById('slot-grid').innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Select doctor & date to see slots</div>';
+}
+
+function loadTimeSlots() {
+  const docId = parseInt(document.getElementById('book-doctor').value);
+  const dateStr = document.getElementById('book-date').value;
+  const grid = document.getElementById('slot-grid');
+  selectedSlot = null;
+  document.getElementById('book-time').value = '';
+
+  if(!docId || !dateStr) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Select doctor & date first</div>';
+    return;
+  }
+
+  const date = new Date(dateStr + 'T00:00:00');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName = days[date.getDay()];
+
+  const sched = DB.doctor_schedules.find(s => s.doctor_id === docId && s.day_of_week === dayName);
+  if(!sched) {
+    grid.innerHTML = '<div style="color:var(--danger);font-size:0.85rem;">Doctor not available on this day</div>';
+    return;
+  }
+
+  // Generate slots
+  const slots = [];
+  const [sh, sm] = sched.start_time.split(':').map(Number);
+  const [eh, em] = sched.end_time.split(':').map(Number);
+  let cur = sh * 60 + sm;
+  const end = eh * 60 + em;
+  while(cur + sched.slot_duration_mins <= end) {
+    const h = Math.floor(cur / 60);
+    const m = cur % 60;
+    const label = `${h > 12 ? h-12 : h}:${m.toString().padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+    const val = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    // Check if already booked
+    const booked = DB.appointments.some(a => a.doctor_id === docId && a.appointment_date === dateStr && a.appointment_time === val && a.status !== 'Cancelled');
+    slots.push({label, val, booked});
+    cur += sched.slot_duration_mins;
+  }
+
+  grid.innerHTML = slots.map(s => `
+    <button class="slot-btn${s.booked ? ' booked' : ''}" ${s.booked ? 'disabled' : `onclick="selectSlot('${s.val}','${s.label}',this)"`}>${s.label}</button>
+  `).join('');
+}
+
+function selectSlot(val, label, btn) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSlot = {val, label};
+  document.getElementById('book-time').value = val;
+}
+
+function buildBookingSummary() {
+  const docId = parseInt(document.getElementById('book-doctor').value);
+  const doc = DB.doctors.find(d => d.id === docId);
+  const pkgId = parseInt(document.getElementById('book-package').value);
+  const pkg = DB.health_packages.find(p => p.id === pkgId);
+  const date = document.getElementById('book-date').value;
+  const mode = document.getElementById('book-mode').value;
+  const name = document.getElementById('book-name').value;
+  const phone = document.getElementById('book-phone').value;
+  const symptoms = document.getElementById('book-symptoms').value;
+  const payment = document.getElementById('book-payment').value;
+  const couponCode = document.getElementById('book-coupon').value.toUpperCase();
+
+  let fee = doc ? doc.consultation_fee : (pkg ? pkg.price : 0);
+  let discount = 0;
+  let couponNote = '';
+
+  if(couponCode) {
+    const coupon = DB.coupons.find(c => c.code === couponCode && c.is_active);
+    if(coupon && fee >= coupon.min_order_amount) {
+      if(coupon.discount_type === 'Flat') discount = coupon.discount_value;
+      else discount = Math.round(fee * coupon.discount_value / 100);
+      couponNote = `<div style="color:var(--secondary);font-size:0.85rem;margin-top:4px;">✅ Coupon applied: -₹${discount}</div>`;
+    }
+  }
+
+  const finalFee = Math.max(0, fee - discount);
+
+  document.getElementById('booking-summary').innerHTML = `
+    <div style="font-size:0.9rem;line-height:2;">
+      <div class="info-row">👤 <strong>Patient:</strong> ${name || '—'} &nbsp; 📞 ${phone || '—'}</div>
+      <div class="info-row">${doc ? `👨‍⚕️ <strong>Doctor:</strong> ${doc.full_name}` : `📦 <strong>Package:</strong> ${pkg?.name || '—'}`}</div>
+      <div class="info-row">📅 <strong>Date & Time:</strong> ${date || '—'} ${selectedSlot?.label || ''}</div>
+      <div class="info-row">🏥 <strong>Mode:</strong> ${mode}</div>
+      <div class="info-row">💬 <strong>Symptoms:</strong> ${symptoms || '—'}</div>
+      <div class="info-row">💳 <strong>Payment:</strong> ${payment}</div>
+      <hr style="margin:10px 0;border-color:var(--border);">
+      <div class="info-row">💰 <strong>Consultation Fee:</strong> ₹${fee.toLocaleString()}</div>
+      ${discount ? `<div class="info-row">🏷️ <strong>Discount:</strong> -₹${discount}</div>` : ''}
+      <div class="info-row" style="font-size:1rem;"><strong>Total:</strong> <span style="color:var(--primary);font-weight:800;font-size:1.1rem;">₹${finalFee.toLocaleString()}</span></div>
+      ${couponNote}
+    </div>
+  `;
+  bookingData = {docId, pkgId, date, mode, name, phone, fee: finalFee};
+}
+
+function confirmBooking() {
+  const name = document.getElementById('book-name').value;
+  const phone = document.getElementById('book-phone').value;
+  if(!name || !phone) { showToast('❌ Please fill patient name & phone', true); bookStep(3); return; }
+
+  const docId = parseInt(document.getElementById('book-doctor').value) || null;
+  const pkgId = parseInt(document.getElementById('book-package').value) || null;
+  if(!docId && !pkgId) { showToast('❌ Please select a doctor or package', true); bookStep(1); return; }
+  const date = document.getElementById('book-date').value;
+  if(!date) { showToast('❌ Please select a date', true); bookStep(2); return; }
+  if(!selectedSlot) { showToast('❌ Please select a time slot', true); bookStep(2); return; }
+
+  const doc = DB.doctors.find(d => d.id === docId);
+  const pkg = DB.health_packages.find(p => p.id === pkgId);
+  const mode = document.getElementById('book-mode').value;
+  const userId = currentUser ? currentUser.id : 1;
+  const ref = `MB2025-${String(nextAppointmentId).padStart(4,'0')}`;
+  const fee = doc ? doc.consultation_fee : (pkg ? pkg.price : 0);
+
+  const newAppt = {
+    id: nextAppointmentId++,
+    booking_ref: ref,
+    user_id: userId,
+    doctor_id: docId,
+    package_id: pkgId,
+    appointment_date: date,
+    appointment_time: selectedSlot.val,
+    consultation_type: mode,
+    status: 'Pending',
+    symptoms: document.getElementById('book-symptoms').value,
+    consultation_fee: fee
+  };
+  DB.appointments.push(newAppt);
+
+  // Add notification
+  if(currentUser) {
+    DB.notifications.push({
+      id: DB.notifications.length + 1,
+      user_id: userId,
+      title: 'Booking Confirmed ✅',
+      message: `Your appointment ${ref} on ${date} at ${selectedSlot.label} has been booked.`,
+      type: 'Appointment',
+      is_read: false
+    });
+  }
+
+  document.getElementById('confirm-details').innerHTML = `
+    <div style="font-size:0.88rem;color:var(--muted);line-height:1.9;">
+      Booking ID: <strong style="color:var(--text);">#${ref}</strong><br>
+      ${doc ? `Doctor: <strong style="color:var(--text);">${doc.full_name}</strong><br>` : `Package: <strong style="color:var(--text);">${pkg?.name}</strong><br>`}
+      Date & Time: <strong style="color:var(--text);">${date} — ${selectedSlot.label}</strong><br>
+      Mode: <strong style="color:var(--text);">${mode}</strong><br>
+      Status: <strong style="color:var(--secondary);">Pending Confirmation</strong>
+    </div>
+  `;
+  openModal('confirm');
+  selectedSlot = null;
+  bookStep(1);
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const loginPrompt = document.getElementById('dashboard-login-prompt');
+  const content = document.getElementById('dashboard-content');
+  if(!currentUser) {
+    loginPrompt.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  loginPrompt.style.display = 'none';
+  content.style.display = 'block';
+
+  document.getElementById('dash-name').textContent = currentUser.full_name;
+  document.getElementById('dash-email').textContent = currentUser.email;
+
+  const myAppts = DB.appointments.filter(a => a.user_id === currentUser.id);
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = myAppts.filter(a => a.appointment_date >= today && a.status !== 'Cancelled');
+  const myReports = DB.lab_reports.filter(r => r.user_id === currentUser.id);
+  const unread = DB.notifications.filter(n => n.user_id === currentUser.id && !n.is_read);
+
+  document.getElementById('dash-count-total').textContent = myAppts.length;
+  document.getElementById('dash-count-upcoming').textContent = upcoming.length;
+  document.getElementById('dash-count-reports').textContent = myReports.length;
+
+  const dot = document.getElementById('notif-dot');
+  dot.style.display = unread.length ? 'inline-block' : 'none';
+
+  dashSection('appointments');
+}
+
+function dashSection(section) {
+  document.querySelectorAll('.dash-menu li').forEach(li => li.classList.remove('active'));
+  const idx = ['appointments','reports','prescriptions','notifications','profile'].indexOf(section);
+  document.querySelectorAll('.dash-menu li')[idx]?.classList.add('active');
+
+  const container = document.getElementById('dash-section-content');
+  const myAppts = DB.appointments.filter(a => a.user_id === currentUser?.id);
+  const today = new Date().toISOString().split('T')[0];
+
+  if(section === 'appointments') {
+    const upcoming = myAppts.filter(a => a.appointment_date >= today && a.status !== 'Cancelled').sort((a,b) => a.appointment_date.localeCompare(b.appointment_date));
+    const past = myAppts.filter(a => a.appointment_date < today || a.status === 'Cancelled').sort((a,b) => b.appointment_date.localeCompare(a.appointment_date));
+
+    container.innerHTML = `
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">📅 Upcoming Appointments</div>
+        ${upcoming.length ? upcoming.map(a => apptItemHTML(a)).join('') : '<div class="empty-state"><div class="icon">📅</div><p>No upcoming appointments</p><button class="btn btn-primary btn-sm" onclick="showPage(\'book\')">Book Now</button></div>'}
+      </div>
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🕐 Past Appointments</div>
+        ${past.length ? past.map(a => apptItemHTML(a)).join('') : '<div class="empty-state"><div class="icon">🕐</div><p>No past appointments</p></div>'}
+      </div>
+    `;
+  } else if(section === 'reports') {
+    const reports = DB.lab_reports.filter(r => r.user_id === currentUser?.id);
+    container.innerHTML = `
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🧪 My Lab Reports</div>
+        ${reports.length ? reports.map(r => `
+          <div class="appt-item">
+            <div class="appt-icon">🩸</div>
+            <div class="appt-info">
+              <div class="name">${r.report_name}</div>
+              <div class="time">📅 ${r.report_date} · Uploaded by ${r.uploaded_by}</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="showToast('📄 Download feature coming soon!')">⬇️ Download</button>
+          </div>
+        `).join('') : '<div class="empty-state"><div class="icon">🧪</div><p>No lab reports yet</p></div>'}
+      </div>
+    `;
+  } else if(section === 'prescriptions') {
+    const prescs = DB.prescriptions.filter(p => p.user_id === currentUser?.id);
+    container.innerHTML = `
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">💊 My Prescriptions</div>
+        ${prescs.length ? prescs.map(p => {
+          const doc = DB.doctors.find(d => d.id === p.doctor_id);
+          return `
+            <div class="appt-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
+              <div style="display:flex;width:100%;align-items:center;gap:12px;">
+                <div class="appt-icon">💊</div>
+                <div class="appt-info">
+                  <div class="name">${doc?.full_name || 'Doctor'}</div>
+                  <div class="time">Follow-up: ${p.follow_up_date || 'N/A'}</div>
+                </div>
+              </div>
+              <div style="background:#f8fafc;border-radius:8px;padding:12px;width:100%;font-size:0.85rem;">
+                <div style="font-weight:600;margin-bottom:6px;">Medicines:</div>
+                ${p.medicines.map(m => `<div>• ${m.name} — ${m.dosage} for ${m.duration}</div>`).join('')}
+                <div style="margin-top:8px;color:var(--muted);">📝 ${p.instructions}</div>
+              </div>
+            </div>
+          `;
+        }).join('') : '<div class="empty-state"><div class="icon">💊</div><p>No prescriptions yet</p></div>'}
+      </div>
+    `;
+  } else if(section === 'notifications') {
+    const notifs = DB.notifications.filter(n => n.user_id === currentUser?.id).reverse();
+    // Mark all as read
+    notifs.forEach(n => n.is_read = true);
+    document.getElementById('notif-dot').style.display = 'none';
+    container.innerHTML = `
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🔔 Notifications</div>
+        ${notifs.length ? notifs.map(n => `
+          <div class="notif-item ${!n.is_read ? 'unread' : ''}">
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-msg">${n.message}</div>
+          </div>
+        `).join('') : '<div class="empty-state"><div class="icon">🔔</div><p>No notifications</p></div>'}
+      </div>
+    `;
+  } else if(section === 'profile') {
+    const u = currentUser;
+    const city = DB.cities.find(c => c.id === u.city_id);
+    container.innerHTML = `
+      <div class="dash-card">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">👤 My Profile</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Full Name</label><input value="${u.full_name}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Email</label><input value="${u.email}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Phone</label><input value="${u.phone}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Gender</label><input value="${u.gender||'—'}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Date of Birth</label><input value="${u.date_of_birth||'—'}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Blood Group</label><input value="${u.blood_group||'—'}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>City</label><input value="${city?.name||'—'}" readonly style="background:#f8fafc;"/></div>
+          <div class="form-group"><label>Address</label><input value="${u.address||'—'}" readonly style="background:#f8fafc;"/></div>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:12px;">Profile editing coming soon.</p>
+      </div>
+    `;
+  }
+}
+
+function apptItemHTML(a) {
+  const doc = a.doctor_id ? DB.doctors.find(d => d.id === a.doctor_id) : null;
+  const pkg = a.package_id ? DB.health_packages.find(p => p.id === a.package_id) : null;
+  const statusMap = {Confirmed:'status-confirmed',Pending:'status-pending',Cancelled:'status-cancelled',Completed:'status-completed','No Show':'status-cancelled'};
+  return `
+    <div class="appt-item">
+      <div class="appt-icon">${doc ? doc.avatar : '📦'}</div>
+      <div class="appt-info">
+        <div class="name">${doc ? doc.full_name : (pkg?.name || 'Package')}</div>
+        <div class="time">🗓️ ${a.appointment_date} ${a.appointment_time} · ${a.consultation_type} · <strong>₹${a.consultation_fee}</strong></div>
+        <div class="time" style="margin-top:2px;">Ref: ${a.booking_ref}</div>
+      </div>
+      <span class="status ${statusMap[a.status]||''}">${a.status}</span>
+      ${a.status === 'Pending' || a.status === 'Confirmed' ? `<button class="btn btn-danger btn-sm" onclick="cancelAppt(${a.id})" style="margin-left:6px;">Cancel</button>` : ''}
+    </div>
+  `;
+}
+
+function cancelAppt(id) {
+  const appt = DB.appointments.find(a => a.id === id);
+  if(appt) {
+    appt.status = 'Cancelled';
+    showToast('🚫 Appointment cancelled');
+    renderDashboard();
+  }
+}
+
+// ============================================================
+//  AUTH
+// ============================================================
+function loginUser() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+
+  const user = DB.users.find(u => (u.email === email || u.phone === email) && u.password === pass);
+  if(!user) {
+    errEl.style.display = 'block';
+    errEl.textContent = '❌ Invalid email/phone or password. Try: rahul@gmail.com / Password@123';
+    return;
+  }
+  errEl.style.display = 'none';
+  currentUser = user;
+  closeModal('login');
+  updateNavForUser();
+  showToast(`✅ Welcome back, ${user.full_name}!`);
+}
+
+function signupUser() {
+  const name = document.getElementById('signup-name').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  const errEl = document.getElementById('signup-error');
+
+  if(!name || !phone || !email || !pass) {
+    errEl.style.display = 'block'; errEl.textContent = '❌ All fields are required.'; return;
+  }
+  if(pass.length < 6) {
+    errEl.style.display = 'block'; errEl.textContent = '❌ Password must be at least 6 characters.'; return;
+  }
+  if(DB.users.find(u => u.email === email)) {
+    errEl.style.display = 'block'; errEl.textContent = '❌ Email already registered.'; return;
+  }
+
+  const newUser = {
+    id: DB.users.length + 1, full_name: name, email, phone, password: pass,
+    gender: null, date_of_birth: null, blood_group: null, address: null,
+    city_id: null, is_verified: false
+  };
+  DB.users.push(newUser);
+  currentUser = newUser;
+  errEl.style.display = 'none';
+  closeModal('signup');
+  updateNavForUser();
+  showToast(`🎉 Account created! Welcome, ${name}!`);
+}
+
+function logoutUser() {
+  currentUser = null;
+  updateNavForUser();
+  showToast('👋 Logged out successfully');
+  showPage('home');
+}
+
+function updateNavForUser() {
+  const navUser = document.getElementById('nav-user');
+  const btnLogin = document.getElementById('btn-login');
+  const btnSignup = document.getElementById('btn-signup');
+  const btnLogout = document.getElementById('btn-logout');
+  if(currentUser) {
+    navUser.textContent = `👤 ${currentUser.full_name.split(' ')[0]}`;
+    navUser.style.display = 'inline';
+    btnLogin.style.display = 'none';
+    btnSignup.style.display = 'none';
+    btnLogout.style.display = 'inline-block';
+  } else {
+    navUser.style.display = 'none';
+    btnLogin.style.display = 'inline-block';
+    btnSignup.style.display = 'inline-block';
+    btnLogout.style.display = 'none';
+  }
+}
+
+// ============================================================
+//  MODALS
+// ============================================================
+function openModal(name) { document.getElementById('modal-' + name).classList.add('active'); }
+function closeModal(name) { document.getElementById('modal-' + name).classList.remove('active'); }
+function switchModal() { ['login','signup'].forEach(m => document.getElementById('modal-' + m).classList.toggle('active')); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('active'); }));
+
+// ============================================================
+//  TOAST
+// ============================================================
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ============================================================
+//  AI ASSISTANT (Anthropic API)
+// ============================================================
+let aiOpen = false;
+let aiHistory = [];
+
+function toggleAI() {
+  aiOpen = !aiOpen;
+  document.getElementById('ai-panel').classList.toggle('open', aiOpen);
+}
+
+function aiQuick(msg) { document.getElementById('ai-input').value = msg; sendAI(); }
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+
+  addAIMsg(msg, 'user');
+  aiHistory.push({ role: 'user', content: msg });
+
+  const typingEl = addAIMsg('Thinking...', 'typing');
+
+  // Build context from DB
+  const dbContext = `
+You are MediBook's AI health assistant. You have access to the following live data:
+
+DOCTORS (${DB.doctors.length}):
+${DB.doctors.map(d => {
+  const spec = DB.specialties.find(s => s.id === d.specialty_id);
+  const city = DB.cities.find(c => c.id === d.city_id);
+  return `- ${d.full_name} | ${spec?.name} | ${d.hospital_name}, ${city?.name} | ₹${d.consultation_fee}/consultation | ${d.experience_years}yrs exp | Rating: ${d.avg_rating}/5 | Video:${d.is_available_video} Clinic:${d.is_available_clinic}`;
+}).join('\n')}
+
+HEALTH PACKAGES:
+${DB.health_packages.map(p => `- ${p.name}: ₹${p.price} (was ₹${p.original_price}) | Tests: ${p.includes_tests}`).join('\n')}
+
+SPECIALTIES: ${DB.specialties.map(s => `${s.icon} ${s.name}`).join(', ')}
+
+CITIES SERVED: ${DB.cities.map(c => c.name).join(', ')}
+
+COUPONS: ${DB.coupons.filter(c=>c.is_active).map(c => `${c.code} (${c.discount_type === 'Flat' ? '₹'+c.discount_value+' off' : c.discount_value+'% off'}, min order ₹${c.min_order_amount})`).join(', ')}
+
+${currentUser ? `LOGGED IN USER: ${currentUser.full_name} | My appointments: ${DB.appointments.filter(a=>a.user_id===currentUser.id).length}` : 'USER: Not logged in'}
+
+Be concise, helpful, and friendly. Use emojis sparingly. Help users find doctors, understand symptoms, choose packages, or navigate the app. Do not invent doctors or data not listed above.
+  `.trim();
+
+  try {
+    const messages = aiHistory.slice(-8); // keep recent history
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: dbContext,
+        messages
+      })
+    });
+    const data = await res.json();
+    typingEl.remove();
+    const reply = data.content?.[0]?.text || 'Sorry, I could not get a response.';
+    addAIMsg(reply, 'bot');
+    aiHistory.push({ role: 'assistant', content: reply });
+  } catch(err) {
+    typingEl.remove();
+    addAIMsg('⚠️ Could not connect. Please check your connection.', 'bot');
+  }
+}
+
+function addAIMsg(text, type) {
+  const msgs = document.getElementById('ai-messages');
+  const el = document.createElement('div');
+  el.className = `ai-msg ${type}`;
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+</script>
+</body>
+</html>
